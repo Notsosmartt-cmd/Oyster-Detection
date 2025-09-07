@@ -1,0 +1,54 @@
+# We're going to train like this and see what happens. If indeterminate wins out over open and close... damn. gotta fix that
+# Otherwise, awesome
+# Load the YOLOv8 model (you can use the YOLOv8 small model or any other size)
+model = YOLO("yolov8s.pt")  # or use another model like "yolov8n.pt", "yolov8m.pt", etc.
+
+# Train the model with additional parameters
+print("Beginning Training...")
+
+# Train with verbose output to monitor loss and metrics during training
+model.train(
+    data=dataset.location + "/data.yaml", 
+    epochs=100, 
+    imgsz=640, 
+    batch=16, 
+    patience = 10, #stop if no improvement in 5 epochs
+    verbose=True,
+    save=True,
+    save_period=5,
+    name="high_performance_model",
+    exist_ok=True
+)
+
+print("Finished Training!")
+
+# After training, evaluate the model on the validation set and print detailed metrics
+results = model.val()  # This will run evaluation on the validation dataset
+metrics = results.box  # You can get various metrics (Precision, Recall, etc.)
+
+# Print evaluation metrics (Mean per class)
+print("\n📊 Evaluation Metrics (Mean per class):")
+print(f"Precision:      {metrics.p.mean():.3f}")
+print(f"Recall:         {metrics.r.mean():.3f}")
+print(f"mAP@0.5:        {metrics.ap50.mean():.3f}")
+print(f"mAP@0.5:0.95:   {metrics.map.mean():.3f}")
+
+# Optionally, visualize results on a test image
+results = model.predict("/mnt/linuxlab/home/ncorcoran1/Downloads/Oysters_at_Weekapaug_Breachway-1826690930.png")  # Replace with your test image path
+
+# Show the image with predicted bounding boxes and class labels
+results[0].show()
+
+# Optionally, print confusion matrix to see how well the model differentiates between classes
+from sklearn.metrics import confusion_matrix
+import numpy as np
+
+# Confusion matrix based on predicted and true labels (assuming you have true labels in your test set)
+# You would need to have your test set predictions and ground truths available for this
+true_labels = [0, 1, 2]  # example for test set labels
+pred_labels = [0, 1, 2]  # example predicted labels from your model (to replace)
+
+conf_matrix = confusion_matrix(true_labels, pred_labels)
+print("\nConfusion Matrix:")
+print(conf_matrix)
+
